@@ -1,0 +1,1052 @@
+{
+  "name": "3 - Follow-Up Scheduler",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "keyValue": "qualifying"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "contacted"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "hot"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "warm"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "cold"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "id": "12bd8f57-0dbc-477e-bf2a-217221baa443",
+      "name": "Get Active Leads",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ Number($json.attempts) }}",
+              "operator": {
+                "operation": "gte",
+                "type": "number"
+              },
+              "rightValue": 1,
+              "id": "2072b773-78cc-4eb5-8864-bdce09850ace"
+            },
+            {
+              "leftValue": "={{ Number($json.attempts) }}",
+              "operator": {
+                "operation": "lt",
+                "type": "number"
+              },
+              "rightValue": 5,
+              "id": "0a09144c-3c58-4e61-9a2c-0332a6f2e608"
+            },
+            {
+              "leftValue": "={{ $json.chat_id }}",
+              "operator": {
+                "operation": "notEmpty",
+                "singleValue": true,
+                "type": "string"
+              },
+              "rightValue": "",
+              "id": "d7fba524-8a3c-4480-a779-810419293667"
+            },
+            {
+              "leftValue": "={{ DateTime.fromISO($json.next_contact_at) <= $now }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": "",
+              "id": "e1f0c7bc-81b3-445e-be7c-41e58489cbc7"
+            },
+            {
+              "leftValue": "={{ DateTime.fromISO($json.createdAt) > $now.minus({hours: 24}) }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": "",
+              "id": "5e274050-db95-4a7e-9c59-52ada363e595"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b19f1565-1874-4bfa-93aa-90cf936010ff",
+      "name": "Filter Due Leads",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        448,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ Number($json.attempts) }}",
+                    "rightValue": 1,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "attempt_1"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ Number($json.attempts) }}",
+                    "rightValue": 2,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "attempt_2"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ Number($json.attempts) }}",
+                    "rightValue": 3,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "attempt_3"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ Number($json.attempts) }}",
+                    "rightValue": 4,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "attempt_4"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "d871390a-2507-426f-b51b-122215e59a25",
+      "name": "Route by Attempt",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1136,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg",
+              "name": "message",
+              "value": "=Hi {{ $json.name }}, just checking in. Are you still looking for {{ $json.interest }}?",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "02e817be-e5cf-4cf9-9664-6924ec126f5f",
+      "name": "Message 1 - Check In",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1354114677796159",
+        "recipientPhoneNumber": "={{ $json.chat_id }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "id": "04d6d45d-44d9-44a6-b336-04fc14ba2161",
+      "name": "Send Follow-Up",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1664,
+        240
+      ],
+      "webhookId": "2351aeb1-fe4a-4194-af92-b10670d52962",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "atVSwrRjTQLKx3s0",
+          "name": "WhatsApp account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $(\"Loop Over Leads\").item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "attempts": "={{ String(Number($(\"Loop Over Leads\").item.json.attempts) + ($(\"Loop Over Leads\").item.json.status === \"contacted\" ? 2 : 1)) }}",
+            "next_contact_at": "={{ $now.plus({hours: $(\"Loop Over Leads\").item.json.status === \"contacted\" ? 6 : 2}).toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "attempts",
+              "displayName": "attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "next_contact_at",
+              "displayName": "next_contact_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "answers",
+              "displayName": "answers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "93cdfefc-19fb-481d-be0f-33d79d923d13",
+      "name": "Update Attempts",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1968,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e0929ea0-c86f-46f1-b13a-291171f98c81",
+      "name": "Loop Over Leads",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        736,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg",
+              "name": "message",
+              "value": "=Hi {{ $json.name }}, are you still interested in {{ $json.interest }}? Reply here and I will help with the next step.",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "25a7d288-a9b7-4373-9bbc-41a6e83fe76f",
+      "name": "Message 2 - Market Update",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg",
+              "name": "message",
+              "value": "={{ $json.name }}, tell me your budget and move-in date and I will shortlist the best match.",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "ed08ea94-753f-4d4b-ac24-efb7b055acd4",
+      "name": "Message 3 - Ask Budget",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg",
+              "name": "message",
+              "value": "=Last check-in: should I keep looking for {{ $json.interest }} for you, or pause? Reply STOP to opt out.",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "bb97b6bd-829a-475c-a710-46a78a867096",
+      "name": "Message 4 - Last Check-In",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "keyValue": "qualifying"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "contacted"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "hot"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "warm"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "cold"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "id": "36152bcb-4968-47ed-ab5d-35fc819c1b4a",
+      "name": "Get Leads to Escalate",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ (Number($json.attempts) >= 5 && DateTime.fromISO($json.next_contact_at) <= $now) || ([\"qualifying\", \"contacted\", \"hot\"].includes($json.status) && DateTime.fromISO($json.createdAt) <= $now.minus({hours: 24})) }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "01008b55-f359-42d8-bbb8-1ac1680935be",
+      "name": "Filter 5+ Attempts",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        448,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "unresponsive"
+          },
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "93323aa1-490b-45da-a396-cc2767aeb844",
+      "name": "Mark Unresponsive",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1354114677796159",
+        "recipientPhoneNumber": "923158925201",
+        "textBody": "=⚠️ {{ $(\"Filter 5+ Attempts\").item.json.name }} ({{ $(\"Filter 5+ Attempts\").item.json.status }}) did not finish qualifying within 24 hours. Please follow up: https://wa.me/{{ $(\"Filter 5+ Attempts\").item.json.chat_id }}",
+        "additionalFields": {}
+      },
+      "id": "5d6c9683-e4d4-44a4-bddb-c99df45a8bb6",
+      "name": "Notify Manager Unresponsive",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        224
+      ],
+      "webhookId": "f46457f4-7190-4c76-bb87-68f8a3fd4a17",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "atVSwrRjTQLKx3s0",
+          "name": "WhatsApp account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "f8ec0ded-55cc-4f98-8ef5-8b9148250290",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        48,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7cb6660f-0cb3-44a1-8b87-a6b21964176c",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "contacted",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "4ae49c75-1480-4967-b75b-0e262d598d74",
+      "name": "Never Replied?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.error ? \"fail\" : \"ok\" }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "ok"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "13abdd74-7ab8-488f-b0d9-e9cbb1ef41ca",
+      "name": "Send OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $(\"Loop Over Leads\").item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "schema": [
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "next_contact_at",
+              "id": "next_contact_at",
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "next_contact_at": "={{ $now.plus({hours: 1}).toISO() }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "8489afb2-fca9-4002-87a4-6e2f3b89cdaf",
+      "name": "Retry Later",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1984,
+        624
+      ],
+      "notes": "Send failed (token expired, 24h window, etc.). Do not count it as an attempt; try again in 1 hour."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/1354114677796159/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $json.chat_id }}\",\n  \"type\": \"template\",\n  \"template\": {\n    \"name\": \"lead_welcome\",\n    \"language\": { \"code\": \"en\" },\n    \"components\": [\n      { \"type\": \"body\", \"parameters\": [\n        { \"type\": \"text\", \"text\": {{ JSON.stringify(String($json.name).split(' ')[0]) }} },\n        { \"type\": \"text\", \"text\": {{ JSON.stringify(String($json.interest).replace(/\\s+/g, ' ')) }} }\n      ] }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "id": "f553f839-df4b-42cf-8688-a024808d815c",
+      "name": "Send Template Follow-Up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1728,
+        704
+      ],
+      "credentials": {
+        "whatsAppApi": {
+          "id": "atVSwrRjTQLKx3s0",
+          "name": "WhatsApp account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Reminder for leads who never replied: re-sends the approved template lead_welcome."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Active Leads": {
+      "main": [
+        [
+          {
+            "node": "Filter Due Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Due Leads": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Leads": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Never Replied?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Never Replied?": {
+      "main": [
+        [
+          {
+            "node": "Send Template Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route by Attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Attempt": {
+      "main": [
+        [
+          {
+            "node": "Message 1 - Check In",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message 2 - Market Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message 3 - Ask Budget",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message 4 - Last Check-In",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message 1 - Check In": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message 2 - Market Update": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message 3 - Ask Budget": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message 4 - Last Check-In": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Attempts": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Leads to Escalate": {
+      "main": [
+        [
+          {
+            "node": "Filter 5+ Attempts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter 5+ Attempts": {
+      "main": [
+        [
+          {
+            "node": "Mark Unresponsive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Unresponsive": {
+      "main": [
+        [
+          {
+            "node": "Notify Manager Unresponsive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "Send OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send OK?": {
+      "main": [
+        [
+          {
+            "node": "Update Attempts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retry Later",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Later": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Template Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "Send OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Get Active Leads",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Leads to Escalate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "fbc729c1-9275-49ad-9491-3e70b8fb4300",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "1498c27a5c21572073c5fa8679a34d945ec42bcec57f720d5a2d054675b9c791"
+  },
+  "nodeGroups": [],
+  "id": "g6qjShupODr5vTkC",
+  "tags": []
+}

@@ -1,0 +1,708 @@
+{
+  "name": "1 - Lead Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Find Your Dubai Apartment",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Phone",
+              "placeholder": "923001234567 (with country code)",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Looking for",
+              "placeholder": "1-Bed Dubai Marina",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "WhatsApp consent",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "I agree to receive WhatsApp messages about my enquiry"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "path": "dubai-apartment-lead-intake"
+        }
+      },
+      "id": "54d9cfe2-9e95-49dc-9ab9-3b02b23e2b0e",
+      "name": "Lead Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        64
+      ],
+      "webhookId": "cf08443f-f9d4-4522-bdda-422bca231f0d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "p1",
+              "name": "phone_clean",
+              "type": "string",
+              "value": "={{ String($json.Phone).replace(/\\D/g,'').replace(/^00/,'').replace(/^0(3\\d{9})$/,'92$1').replace(/^0(5\\d{8})$/,'971$1') }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "0fc6e953-7258-422d-9730-ec84a69eb5cf",
+      "name": "Clean Phone",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $(\"Check Lead\").first().json.Name }}",
+            "phone": "={{ $(\"Check Lead\").first().json.phone_clean }}",
+            "interest": "={{ $(\"Check Lead\").first().json[\"Looking for\"] }}",
+            "status": "new",
+            "attempts": "0",
+            "chat_id": "={{ $(\"Check Lead\").first().json.phone_clean }}",
+            "next_contact_at": "={{ $now.toISO() }}",
+            "answers": "{}"
+          },
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempts",
+              "displayName": "attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_contact_at",
+              "displayName": "next_contact_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "answers",
+              "displayName": "answers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ab39667d-9aab-485c-aee7-37f620299560",
+      "name": "Save Lead",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Save Lead').first().json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "attempts": "={{ $json.messages?.[0]?.id ? \"1\" : \"0\" }}",
+            "history": "={{ $json.messages?.[0]?.id ? \"Bot: Hi \" + String($(\"Check Lead\").first().json.Name).split(\" \")[0] + \", thanks for your interest in \" + String($(\"Check Lead\").first().json[\"Looking for\"]).replace(/\\s+/g, \" \") + \" in Dubai. I'm your property assistant. Are you looking to rent or buy?\" : \"\" }}",
+            "next_contact_at": "={{ $now.plus({hours: 3}).toISO() }}",
+            "status": "={{ $json.messages?.[0]?.id ? \"contacted\" : \"new\" }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "attempts",
+              "displayName": "attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "next_contact_at",
+              "displayName": "next_contact_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "answers",
+              "displayName": "answers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "history",
+              "displayName": "history",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9f1b3cf5-c449-45ef-aef7-d1aa16778c06",
+      "name": "Mark Contacted",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1376,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "You're all set",
+        "completionMessage": "=Thanks {{ $('Lead Form').first().json.Name }}! {{ $('Send Welcome Template').first().json.messages?.[0]?.id ? 'We have just sent you a WhatsApp message with your first question. Please reply there. If you do not see it, tap here: ' : 'Tap the link below to start your WhatsApp chat with our property assistant: ' }}https://wa.me/15551478932?text=Hi",
+        "options": {}
+      },
+      "id": "425d5e04-1bfc-44f1-8ff8-e45a8104ac11",
+      "name": "Show WhatsApp Link",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1520,
+        112
+      ],
+      "webhookId": "343a5ca9-9bb3-4ac3-9ab7-1b25fdbf3310"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "keyValue": "={{ $json.phone_clean || \"none\" }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "id": "6f347cd7-11e8-4526-b643-e908f983ed64",
+      "name": "Find Existing Lead",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        64
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const DUP_MINUTES = 2; // blocks accidental double-submits but allows quick demo retakes. Use 1440 (24h) in production.\nconst form = $('Clean Phone').first().json;\nconst rows = $input.all().map((i) => i.json).filter((r) => r && r.id !== undefined && r.id !== null);\nconst text = (v) => (v === null || v === undefined) ? '' : String(v).trim();\nconst name = text(form.Name).slice(0, 60);\nconst interest = text(form['Looking for']).slice(0, 80);\nconst phone = text(form.phone_clean);\nconst consentRaw = form['WhatsApp consent'];\nconst consent = Array.isArray(consentRaw) ? consentRaw.length > 0 : !!consentRaw;\nconst bad = /https?:|www[.]|[<>]/i;\nlet reason = '';\nlet msg = '';\nif (!consent) {\n  reason = 'consent';\n  msg = 'Please tick the consent box so we can message you on WhatsApp, then submit the form again.';\n} else if (!/^[1-9][0-9]{9,14}$/.test(phone)) {\n  reason = 'phone';\n  msg = 'That phone number does not look valid. Please include your country code, for example 923001234567, and submit the form again.';\n} else if (name.length < 2 || interest.length < 2 || bad.test(name) || bad.test(interest)) {\n  reason = 'invalid';\n  msg = 'Please check your name and what you are looking for, then submit the form again.';\n} else if (rows.some((r) => text(r.status) === 'stopped')) {\n  reason = 'optout';\n  msg = 'You previously asked us to stop messaging you, so we cannot contact you on WhatsApp.';\n} else if (rows.some((r) => (Date.now() - new Date(r.createdAt).getTime()) < DUP_MINUTES * 60000)) {\n  reason = 'duplicate';\n  msg = 'We have just received your request. Please check your WhatsApp chat and reply there.';\n}\nreturn [{ json: { ...form, Name: name, 'Looking for': interest, ok: reason === '', reason, reason_text: msg } }];\n"
+      },
+      "id": "6666beb1-fbb1-4080-a944-67957de7d1c2",
+      "name": "Check Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        64
+      ],
+      "notes": "Guardrail: consent, phone format, input sanity, opt-out, duplicate within DUP_MINUTES (raise to 1440 for production)."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b7a1c3d2-5e41-4f0a-9a55-0c1f2d3e4a61",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "90b70efe-89f5-4a35-8948-8bed173e8e9f",
+      "name": "Is Submission OK",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "We could not submit your request",
+        "completionMessage": "={{ $json.reason_text }}",
+        "options": {}
+      },
+      "id": "dcd8afb0-3a51-4590-826d-8c8214c85a3a",
+      "name": "Rejected Page",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        800,
+        208
+      ],
+      "webhookId": "29ac9daa-3302-4e9a-a40d-651200d86596"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "cachedResultName": "leads",
+          "mode": "id",
+          "value": "k44go1Rfl9llIZ76"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "keyValue": "={{ $json.phone_clean }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "archived"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "attempts",
+              "displayName": "attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "next_contact_at",
+              "displayName": "next_contact_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "answers",
+              "displayName": "answers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "history",
+              "displayName": "history",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7f291408-2e23-4eef-bc5c-7c27e1f4b113",
+      "name": "Archive Old Leads",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        0
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "notes": "Demo/retake safety: one active lead per phone. Older rows for this phone get status archived and chat_id cleared before the new lead is saved."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/1354114677796159/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $('Save Lead').first().json.chat_id }}\",\n  \"type\": \"template\",\n  \"template\": {\n    \"name\": \"lead_welcome\",\n    \"language\": { \"code\": \"en\" },\n    \"components\": [\n      { \"type\": \"body\", \"parameters\": [\n        { \"type\": \"text\", \"text\": {{ JSON.stringify(String($('Check Lead').first().json.Name).split(' ')[0]) }} },\n        { \"type\": \"text\", \"text\": {{ JSON.stringify(String($('Check Lead').first().json['Looking for']).replace(/\\s+/g, ' ')) }} }\n      ] }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "id": "5008f591-6547-4eb7-926c-4b78076f0b81",
+      "name": "Send Welcome Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1168,
+        96
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "atVSwrRjTQLKx3s0",
+          "name": "WhatsApp account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Business-initiated first message. Needs the approved template lead_welcome (language en): Hi {{1}}, thanks for your interest in {{2}} in Dubai. I'm your property assistant. Are you looking to rent or buy?"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Lead Form": {
+      "main": [
+        [
+          {
+            "node": "Clean Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Contacted": {
+      "main": [
+        []
+      ]
+    },
+    "Clean Phone": {
+      "main": [
+        [
+          {
+            "node": "Find Existing Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Existing Lead": {
+      "main": [
+        [
+          {
+            "node": "Check Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Lead": {
+      "main": [
+        [
+          {
+            "node": "Is Submission OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Submission OK": {
+      "main": [
+        [
+          {
+            "node": "Archive Old Leads",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rejected Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archive Old Leads": {
+      "main": [
+        [
+          {
+            "node": "Save Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Lead": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Template": {
+      "main": [
+        [
+          {
+            "node": "Mark Contacted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "238eacbf-5170-4ca6-9e22-b51d3c66d976",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "1498c27a5c21572073c5fa8679a34d945ec42bcec57f720d5a2d054675b9c791"
+  },
+  "nodeGroups": [],
+  "id": "cuWxwTF3EIU7kgaN",
+  "tags": []
+}
